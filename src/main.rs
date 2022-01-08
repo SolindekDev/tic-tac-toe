@@ -1,11 +1,13 @@
 use std::io;
+use std::process;
+use rand::prelude::*;
 
 #[warn(unused_variables)]
 #[warn(unused_mut)]
 
 const PLAYER: char = 'X';
 const COMPUTER: char = 'O';
-const TIE: char = ' ';
+const TIE: char = 'T';
 
 fn get_y() -> i32 {
     let mut y_str = String::new();
@@ -61,7 +63,7 @@ pub fn player_move(table: &mut [[char; 3]; 3]) -> &mut [[char; 3]; 3] {
 
     table[index_y][index_x] = PLAYER;
 
-    return &mut table;
+    return table;
 }
 
 pub fn free_spaces(table: &mut [[char; 3]; 3]) -> i8 {
@@ -98,10 +100,123 @@ pub fn print_table(table: &mut [[char; 3]; 3]) {
     )
 }
 
+pub fn check_winner(table: &mut [[char; 3]; 3], space: i8) -> char {
+    /*
+        Checks is a winner in rows
+
+        -------------
+        | X | X | X | <--- Rows
+        -------------
+        |   |   |   |
+        -------------
+        |   |   |    |
+        -------------
+    */
+    if table[0][0] == table[0][1] && table[0][0] == table[0][2] {
+        return table[0][0];
+    }
+
+    if table[1][0] == table[1][1] && table[1][0] == table[1][2] {
+        return table[1][0];
+    }
+
+    if table[2][0] == table[2][1] && table[2][0] == table[2][2] {
+        return table[2][0];
+    }
+
+     /*
+        Checks is a winner in columns
+
+        -------------
+        | X |   |   |
+        -------------
+        | X |   |   |
+        -------------
+        | X |   |    |
+        -------------
+         /\
+        Columns
+    */
+    if table[0][0] == table[1][0] && table[0][0] == table[2][0] {
+        return table[0][0];
+    }
+
+    if table[0][1] == table[1][1] && table[0][1] == table[2][1] {
+        return table[0][1];
+    }
+
+    if table[0][2] == table[1][2] && table[0][2] == table[2][2] {
+        println!("winned");
+        return table[0][2];
+    }
+
+    /*
+        Cheks is a winner in crosswise direction
+
+        -------------
+        | X |   |   |
+        -------------
+        |   | X |   |
+        -------------
+        |   |   | X | <--- crosswise direction
+        -------------
+    */
+
+    if table[0][0] == table[1][1] && table[0][0] == table[2][2] {
+        return table[0][0];
+    }
+
+    if table[2][0] == table[1][1] && table[2][0] == table[0][2] {
+        return table[2][0];
+    }
+
+    if space == 0 {
+        return TIE;
+    }
+
+    return ' ';
+}
+
+pub fn random_y() -> i16 {
+    let mut rng = thread_rng();
+    let random: i16 = rng.gen_range(1..4); 
+
+    return random;
+}
+
+pub fn random_x() -> i16 {
+    let mut rng = thread_rng();
+    let random: i16 = rng.gen_range(1..4);
+
+    return random;
+}
+
+pub fn computer_move(table: &mut [[char; 3]; 3]) {
+    let mut x: i16 = random_x()-1;
+    let mut y: i16 = random_y()-1;
+
+    if table[x as usize][y as usize] == ' ' {
+        table[x as usize][y as usize] = COMPUTER;
+        return;
+    } else {
+        while table[x as usize][y as usize] != ' ' {
+            x = random_x()-1;
+            y = random_y()-1;
+
+            if table[x as usize][y as usize] == ' ' {
+                table[x as usize][y as usize] = COMPUTER;
+                return;
+            } else {
+                continue;
+            }
+        }
+    }
+}
+
 pub fn main() {
     let mut winner: char = ' ';
     let mut table = [
-        ['X', ' ', ' '],
+        [' ', ' ', ' '],
         [' ', ' ', ' '],
         [' ', ' ', ' '],
     ];
@@ -109,6 +224,56 @@ pub fn main() {
     while winner == ' ' && free_spaces(&mut table) != 0 {
         print_table(&mut table);
 
-        table = player_move(&mut table);
+        player_move(&mut table);
+
+        let sp: i8 = free_spaces(&mut table);
+        winner = check_winner(&mut table, sp);
+
+        if winner == TIE {
+            print_table(&mut table);
+            println!("TiE! Nobody wins because there no space left!");
+            process::exit(0x0100);
+        } else if winner == COMPUTER {
+            print_table(&mut table);
+            println!("CoMpUtEr WiNs!");
+            process::exit(0x0100);
+        } else if winner == PLAYER {
+            print_table(&mut table);
+            println!("YoU WiN!");
+            process::exit(0x0100);
+        }
+
+        computer_move(&mut table);
+
+        let sp: i8 = free_spaces(&mut table);
+        winner = check_winner(&mut table, sp);
+
+        if winner == TIE {
+            print_table(&mut table);
+            println!("TiE! Nobody wins because there no space left!");
+            process::exit(0x0100);
+        } else if winner == COMPUTER {
+            print_table(&mut table);
+            println!("CoMpUtEr WiNs!");
+            process::exit(0x0100);
+        } else if winner == PLAYER {
+            print_table(&mut table);
+            println!("YoU WiN!");
+            process::exit(0x0100);
+        }
+    }
+
+    if winner == TIE {
+        print_table(&mut table);
+        println!("TiE! Nobody wins because there no space left!");
+        process::exit(0x0100);
+    } else if winner == COMPUTER {
+        print_table(&mut table);
+        println!("CoMpUtEr WiNs!");
+        process::exit(0x0100);
+    } else if winner == PLAYER {
+        print_table(&mut table);
+        println!("YoU WiN!");
+        process::exit(0x0100);
     }
 }
