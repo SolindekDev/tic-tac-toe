@@ -9,44 +9,52 @@ const PLAYER: char = 'X';
 const COMPUTER: char = 'O';
 const TIE: char = 'T';
 
-fn get_y() -> i32 {
-    let mut y_str = String::new();
-
-    println!("Enter column from 1 to 3: ");
-    io::stdin()
-        .read_line(&mut y_str)
-        .expect("Failed to read line!");
-
-    let mut y: i32 = y_str.trim().parse()
-        .expect("Failed to parse number!");
-        
-    if y > 3 || y < 1 {
-        println!("Number is bigger than 3 or smaller than 1!");
-        y = 0;
-        get_y();
-    }
-
-    return y;
-}
-
 fn get_x() -> i32 {
     let mut x_str = String::new();
 
-    println!("Enter row from 1 to 3: ");
+    println!("Enter column from 1 to 3: ");
     io::stdin()
         .read_line(&mut x_str)
         .expect("Failed to read line!");
 
-    let mut x: i32 = x_str.trim().parse()
-        .expect("Failed to parse number!");
-    
-    if x > 3 || x < 1 {
-        println!("Number is bigger than 3 or smaller than 1!");
-        x = 0;
-        get_x();
+    match x_str.trim().parse::<i32>() {
+        Ok(x) => {
+            if x > 3 || x < 1 {
+                println!("Number is bigger than 3 or smaller than 1!");
+                get_x();
+            }
+        
+            return x;
+        },
+        Err(e) => {
+            println!("You must to provide a valid number");
+            get_y()
+        }
     }
-     
-    return x;
+}
+
+fn get_y() -> i32 {
+    let mut y_str = String::new();
+
+    println!("Enter row from 1 to 3: ");
+    io::stdin()
+        .read_line(&mut y_str)
+        .expect("Failed to read line!");
+
+    match y_str.trim().parse::<i32>() {
+        Ok(y) => {
+            if y > 3 || y < 1 {
+                println!("Number is bigger than 3 or smaller than 1!");
+                get_y();
+            }
+        
+            return y;
+        },
+        Err(e) => {
+            println!("You must to provide a valid number");
+            get_y()
+        }
+    }
 }
 
 pub fn player_move(table: &mut [[char; 3]; 3]) -> &mut [[char; 3]; 3] {
@@ -81,12 +89,13 @@ pub fn free_spaces(table: &mut [[char; 3]; 3]) -> i8 {
 }
 
 pub fn print_table(table: &mut [[char; 3]; 3]) {
-    println!("-------------
-| {} | {} | {} |
+    println!(" 1    2   3
 -------------
-| {} | {} | {} | 
+| {} | {} | {} | 1
 -------------
-| {} | {} | {} |
+| {} | {} | {} | 2
+-------------
+| {} | {} | {} | 3
 -------------", 
     table[0][0],
     table[0][1],
@@ -190,6 +199,14 @@ pub fn random_x() -> i16 {
 
     return random;
 }
+
+pub fn random_brain() -> i16 {
+    let mut rng = thread_rng();
+    let random: i16 = rng.gen_range(1..3);
+
+    return random;
+}
+
 
 pub fn computer_move(table: &mut [[char; 3]; 3]) {
     let mut x: i16 = random_x()-1;
